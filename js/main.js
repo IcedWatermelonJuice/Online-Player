@@ -4,18 +4,22 @@ function playM3u8(url, player) {
 		var m3u8Url = decodeURIComponent(url)
 		hls.loadSource(m3u8Url);
 		hls.attachMedia(player);
-		hls.on(Hls.Events.MANIFEST_PARSED);
+		hls.on(Hls.Events.MANIFEST_PARSED,function(){
+			//console.log("M3U8播放器加载成功!");
+		});
 	} else {
-		var msg = "浏览器不支持MediaSource Extensions,无法播放M3U8视频!";
+		var msg = "浏览器不支持MediaSource Extensions,无法加载M3U8播放器!";
 		console.log(msg);
 		alert(msg);
 	}
 }
 
-function checkUrl(url) {
+function checkUrl(url, alertFlag) {
 	var res = false;
 	if (url === "") {
-		alert("输入地址为空!");
+		if (alertFlag) {
+			alert("输入地址为空!");
+		}
 	} else if ((url.search("https://") === 0) || (url.search("http://") === 0) || ((url.search("file://") === 0) && (
 			location.href.search("http") !== 0))) {
 		if (url.search(".m3u8") !== -1) {
@@ -24,7 +28,9 @@ function checkUrl(url) {
 			res = "others";
 		}
 	} else {
-		alert("输入地址格式不正确!");
+		if (alertFlag) {
+			alert("输入地址格式不正确!");
+		}
 	}
 	return res;
 }
@@ -33,7 +39,7 @@ function loadVideo() {
 	var player = document.getElementById('video_player');
 	var url = document.getElementById("url_box").value;
 	url = url.trim();
-	var sourceType = checkUrl(url);
+	var sourceType = checkUrl(url, true);
 	if (sourceType === "m3u8") {
 		playM3u8(url, player);
 		console.log("加载视频资源:" + url);
@@ -46,9 +52,13 @@ function loadVideo() {
 		}
 	}
 }
+
 function playBtn() {
+	var player=document.getElementById('video_player');
 	loadVideo();
-	document.getElementById('video_player').play();
+	if(player.src!==""){
+		player.play();
+	}
 }
 window.onload = function() {
 	var ub = document.getElementById("url_box");
@@ -79,13 +89,15 @@ window.onload = function() {
 	btn.onmouseleave = function() {
 		btn.setAttribute("class", "btn_extra_css_0");
 	}
-	var u=location.href;
-	var us="url=";
-	var uf=u.search(us);
-	if(uf!==-1){
-		u=u.slice(uf+us.length);
-		ub.value=u;
-		ub.removeAttribute("style");
-		loadVideo();
+	var uf = location.href;
+	var us = "url=";
+	var ufs = uf.search(us);
+	if (ufs !== -1) {
+		uf = uf.slice(ufs + us.length);
+		if (checkUrl(uf, false)) {
+			ub.value = uf;
+			ub.removeAttribute("style");
+			loadVideo();
+		}
 	}
 }

@@ -4,11 +4,9 @@ function playM3u8(url, player) {
 		var m3u8Url = decodeURIComponent(url)
 		hls.loadSource(m3u8Url);
 		hls.attachMedia(player);
-		hls.on(Hls.Events.MANIFEST_PARSED, function() {
-			player.play();
-		});
+		hls.on(Hls.Events.MANIFEST_PARSED);
 	} else {
-		var msg = "浏览器不支持MediaSource Extensions";
+		var msg = "浏览器不支持MediaSource Extensions,无法播放M3U8视频!";
 		console.log(msg);
 		alert(msg);
 	}
@@ -31,7 +29,7 @@ function checkUrl(url) {
 	return res;
 }
 
-function playBtn() {
+function loadVideo() {
 	var player = document.getElementById('video_player');
 	var url = document.getElementById("url_box").value;
 	url = url.trim();
@@ -42,12 +40,15 @@ function playBtn() {
 	} else if (sourceType === "others") {
 		try {
 			player.src = url;
-			player.play();
 			console.log("加载视频资源:" + url);
 		} catch (e) {
 			console.log("找不到视频资源或不支持该视频格式!");
 		}
 	}
+}
+function playBtn() {
+	loadVideo();
+	document.getElementById('video_player').play();
 }
 window.onload = function() {
 	var ub = document.getElementById("url_box");
@@ -77,5 +78,14 @@ window.onload = function() {
 	}
 	btn.onmouseleave = function() {
 		btn.setAttribute("class", "btn_extra_css_0");
+	}
+	var u=location.href;
+	var us="url=";
+	var uf=u.search(us);
+	if(uf!==-1){
+		u=u.slice(uf+us.length);
+		ub.value=u;
+		ub.removeAttribute("style");
+		loadVideo();
 	}
 }

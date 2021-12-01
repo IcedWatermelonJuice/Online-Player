@@ -4,7 +4,7 @@ function playM3u8(url, player) {
 		var m3u8Url = decodeURIComponent(url)
 		hls.loadSource(m3u8Url);
 		hls.attachMedia(player);
-		hls.on(Hls.Events.MANIFEST_PARSED,function(){
+		hls.on(Hls.Events.MANIFEST_PARSED, function() {
 			//console.log("M3U8播放器加载成功!");
 		});
 	} else {
@@ -15,69 +15,65 @@ function playM3u8(url, player) {
 }
 
 function checkUrl(url, alertFlag) {
-	var res = false;
-	if (url === "") {
+	url = url.replace(/\s+/g, "");
+	if (!
+		/^((http|https|file):\/\/)?(([-A-Za-z0-9+&@#/%?=~_|!:,.;]+-[-A-Za-z0-9+&@#/%?=~_|!:,.;]+|[-A-Za-z0-9+&@#/%?=~_|!:,.;]+)\.)+([-A-Za-z0-9+&@#/%?=~_|!:,.;]+)[/\?\:]?.*$/i
+		.test(url)) {
 		if (alertFlag) {
-			alert("输入地址为空!");
+			alert("无法识别的URL");
 		}
-	} else if ((url.search("https://") === 0) || (url.search("http://") === 0) || ((url.search("file://") === 0) && (
-			location.href.search("http") !== 0))) {
-		if (url.search(".m3u8") !== -1) {
-			res = "m3u8";
-		} else {
-			res = "others";
-		}
-	} else {
-		if (alertFlag) {
-			alert("输入地址格式不正确!");
-		}
+		return false;
 	}
-	return res;
+	url = url.replace(/^((http|https):)/, "");
+	return /.m3u8/i.test(url) ? "m3u8" : "others";
 }
 
 function loadVideo() {
 	var player = document.getElementById('video_player');
 	var url = document.getElementById("url_box").value;
-	url = url.trim();
+	url = url.replace(/\s+/g, "");
 	var sourceType = checkUrl(url, true);
-	if (sourceType === "m3u8") {
-		playM3u8(url, player);
-		console.log("加载视频资源:" + url);
-	} else if (sourceType === "others") {
-		try {
+	try {
+		console.log("正在加载视频资源:" + url);
+		player.style.width = player.clientWidth + "px";
+		player.style.height = player.clientHeight + "px";
+		if (sourceType === "m3u8") {
+			playM3u8(url, player);
+		} else {
 			player.src = url;
-			console.log("加载视频资源:" + url);
-		} catch (e) {
-			console.log("找不到视频资源或不支持该视频格式!");
 		}
+		console.log("视频资源加载成功");
+	} catch (e) {
+		console.log("找不到视频资源或不支持该视频格式!");
 	}
 }
 
 function playBtn() {
-	var player=document.getElementById('video_player');
+	var player = document.getElementById('video_player');
 	loadVideo();
-	if(player.src!==""){
+	if (player.src !== "") {
 		player.play();
 	}
 }
+
 window.onload = function() {
-	var ub = document.getElementById("url_box");
-	var initvalue = "请输入视频播放地址";
-	ub.value = initvalue;
-	ub.style.color = "gray";
-	ub.onfocus = function() {
-		if (ub.value === initvalue) {
-			ub.value = "";
-			ub.removeAttribute("style");
+	var urlBox = document.getElementById("url_box");
+	var initValue = "请输入视频播放地址";
+	urlBox.value = initValue;
+	urlBox.style.color = "gray";
+	urlBox.onfocus = function() {
+		if (urlBox.value === initValue) {
+			urlBox.value = "";
+			urlBox.removeAttribute("style");
 		}
 	}
-	ub.onblur = function() {
-		if (!ub.value) {
-			ub.value = initvalue;
-			ub.style.color = "gray";
+	urlBox.onblur = function() {
+		if (!urlBox.value) {
+			urlBox.value = initValue;
+			urlBox.style.color = "gray";
 		}
 	}
-	ub.onkeydown = function(event) {
+	urlBox.onkeydown = function(event) {
 		if (event.keyCode === 13) {
 			document.getElementById("url_btn").click();
 		}
@@ -89,15 +85,10 @@ window.onload = function() {
 	btn.onmouseleave = function() {
 		btn.setAttribute("class", "btn_extra_css_0");
 	}
-	var uf = location.href;
-	var us = "url=";
-	var ufs = uf.search(us);
-	if (ufs !== -1) {
-		uf = uf.slice(ufs + us.length);
-		if (checkUrl(uf, false)) {
-			ub.value = uf;
-			ub.removeAttribute("style");
-			loadVideo();
-		}
+	var url = location.href.split("?url=")[1];
+	if (url) {
+		urlBox.value = url;
+		urlBox.removeAttribute("style");
+		loadVideo();
 	}
 }

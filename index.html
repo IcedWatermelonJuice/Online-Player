@@ -4,17 +4,19 @@
 		<meta charset="utf-8">
 		<meta name="viewport" content="width=device-width,initial-scale=1,user-scalable=no" />
 		<meta name="referrer" content="never" />
-		<title>M3U8在线播放器</title>
+		<title>在线视频播放器</title>
 		<link rel="icon" type="image/x-icon" href="img/favicon.ico" />
 		<link rel="stylesheet" type="text/css" href="css/main.css" />
 		<script src="js/hls.min.js"></script>
+		<script src="js/flv.min.js"></script>
 		<script src="js/main.js"></script>
 	</head>
 	<body>
 		<div id="main_box">
-			<div id="logo_box">M3U8在线播放器</div>
+			<div id="logo_box">在线视频播放器</div>
 			<div id="input_box">
-				<input type="text" id="url_box" />
+				<input type="text" id="url_box" autocomplete="off" list="play_history" />
+				<datalist id="play_history"></datalist>
 				<div id="url_btn" class="btn_extra_css_0" onclick="playBtn()">
 					<svg id="btn_logo">
 						<polygon points="1,0 19,10 1,20" />
@@ -22,7 +24,9 @@
 				</div>
 			</div>
 			<div id="video_box">
-				<video id="video_player" controls preload="auto"></video>
+				<video id="video_player" controls preload="auto">
+					 您的浏览器不支持 HTML5 video 标签
+				</video>
 			</div>
 		</div>
 	</body>

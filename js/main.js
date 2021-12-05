@@ -7,7 +7,7 @@ var link = {
 			return false;
 		}
 		url = url.replace(/^((http|https):)/, "");
-		var res = "others";
+		var res = "default";
 		res = /.m3u8/i.test(url) ? "m3u8" : res;
 		res = /.flv/i.test(url) ? "flv" : res;
 		return res;
@@ -51,7 +51,7 @@ var play = {
 					player = play.flv(url, player);
 					break;
 				default:
-					player.src = url;
+					player = play.default(url, player);
 					break;
 			}
 			player.play();
@@ -118,6 +118,16 @@ var play = {
 			console.log(msg);
 			alert(msg);
 		}
+		return player;
+	},
+	default:function(url, player){
+		if (!url || !player) {
+			console.log("play.default(url,player)参数错误:url必选,player必选");
+			return false;
+		}
+		player = this.init(player);
+		url = link.convert(url);
+		player.src = url;
 		return player;
 	},
 	on: function() {

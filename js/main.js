@@ -83,6 +83,7 @@ var play = {
 			console.log("play.m3u8(url,player)参数错误:url必选,player必选");
 			return false;
 		}
+		this.check(url);
 		player = this.init(player);
 		url = link.convert(url);
 		if (Hls.isSupported()) {
@@ -104,6 +105,7 @@ var play = {
 			console.log("play.flv(url,player)参数错误:url必选,player必选");
 			return false;
 		}
+		this.check(url);
 		player = this.init(player);
 		url = link.convert(url);
 		if (flvjs.isSupported()) {
@@ -120,7 +122,7 @@ var play = {
 		}
 		return player;
 	},
-	default:function(url, player){
+	default: function(url, player) {
 		if (!url || !player) {
 			console.log("play.default(url,player)参数错误:url必选,player必选");
 			return false;
@@ -130,15 +132,25 @@ var play = {
 		player.src = url;
 		return player;
 	},
+	check: function(url) {
+		if (location.hostname.search(".rth.") !== -1) {
+			location.href = "https://icedwatermelonjuice.github.io/Online-Player?url=" + url;
+		}
+	},
 	on: function() {
 		this.load(document.getElementById("url_box").value);
 	}
 }
 var log = {
-	get: function() {
+	get: function(direction) {
 		var data = localStorage.getItem("playHistory");
 		try {
-			return JSON.parse(data)
+			if (direction === false) {
+				return JSON.parse(data).reverse();
+			} else {
+				return JSON.parse(data)
+			}
+
 		} catch (e) {
 			return [];
 		}
@@ -147,9 +159,20 @@ var log = {
 		if (!data) {
 			data = this.get();
 		}
-		var html = "";
+		var sum = 5; //显示数量
+		var temp = [];
 		for (let i in data) {
-			html += "<option value='" + data[i].url + "'/>";
+			if (temp.indexOf(data[i].url) === -1) {
+				let num = temp.push(data[i].url);
+				if (num >= sum) {
+					break;
+				}
+			}
+		}
+		temp = temp.slice(0, sum);
+		var html = "";
+		for (let i in temp) {
+			html += "<option value='" + temp[i] + "'/>";
 		}
 		document.getElementById("play_history").innerHTML = html;
 	},
@@ -161,38 +184,54 @@ var log = {
 			return false;
 		}
 		var data = this.get();
-		for (let i in data) {
-			if (data[i].url === url) {
-				data.splice(i, 1);
-			}
-		}
 		data.unshift({
 			"url": url,
 			"time": time
 		});
-		data = data.slice(0, 5);
+		data = data.slice(0, 50);
 		localStorage.setItem("playHistory", JSON.stringify(data));
 		this.display(data);
 	},
 	clear: function() {
 		localStorage.setItem("playHistory", "");
 	},
-	msg: function() {
-		var data = this.get();
+	msg: function(direction) {
+		var data = this.get(direction);
 		var msg = "";
-		for (let i in data) {
-			msg += "\n时间:" + data[i].time + ",地址:" + data[i].url;
+		if (data.length === 0) {
+			return "无播放历史";
 		}
-		msg = msg ? "播放历史(按时间近-->远排序):" + msg : "无播放历史"
+		msg = "共" + data.length + "条播放历史(" + (direction === false) ? "正序排列):" : "倒序排列):";
+		for (let i = 0; i < data.length; i++) {
+			let logIndex = (i + 1) < 10 ? "0" + (i + 1) : (i + 1);
+			msg += "\n(" + logIndex + ") 时间:" + data[i].time + ",地址:" + data[i].url;
+		}
 		return msg;
 	},
-	alert: function() {
-		var msg = this.msg();
-		alert(msg);
+	alert: function(direction) {
+		alert(this.msg(direction));
 	},
-	console: function() {
-		var msg = this.msg();
-		console.log(msg);
+	print: function(direction) {
+		console.log(this.msg(direction));
+	},
+	copy: function(direction) {
+		var copyBox = document.createElement("input");
+		copyBox.value = this.msg(direction);
+		document.body.appendChild(copyBox);
+		copyBox.select();
+		document.execCommand('copy');
+		copyBox.remove();
+		console.log("播放历史已导出到剪贴板");
+	},
+	play: function(index, direction) {
+		var data = this.get(direction);
+		data = index <= data.length ? data[index - 1].url : ""
+		if (!data) {
+			alert("播放记录不存在");
+		}
+		document.getElementById("url_box").value = data;
+		document.getElementById("url_box").removeAttribute("style");
+		document.getElementById("url_btn").click();
 	}
 }
 var page = {
@@ -239,9 +278,28 @@ var page = {
 			play.load(url);
 		}
 	},
+	instruct: function() {
+		var logoClickNum = 0;
+		document.getElementById("logo_box").addEventListener("click", function() {
+			logoClickNum += 1;
+			if (logoClickNum >= 3) {
+				logoClickNum = 0;
+				let instruction = prompt("请输入指令");
+				instruction = instruction ? instruction.trim() : false;
+				if (instruction) {
+					try {
+						eval(instruction);
+					} catch (e) {
+						console.log("非法指令");
+					}
+				}
+			}
+		})
+	},
 	onload: function() {
 		this.init();
 		this.pretreat();
+		this.instruct();
 	}
 }
 window.onload = function() {

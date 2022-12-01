@@ -18,7 +18,8 @@ body {
 }
 
 #input_box {
-	width: 100%;
+	position: relative;
+	width: calc(100% - 2px);
 	height: 38px;
 	margin-bottom: 20px;
 	border: 2px solid rgba(14, 144, 210, .8);
@@ -46,12 +47,49 @@ body {
 	border: 0;
 	cursor: pointer;
 }
-.btn_extra_css_0{
+
+#play_history {
+	position: absolute;
+	top: 40px;
+	left: 0;
+	width: 90%;
+	height: auto;
+	min-height: 38px;
+	z-index: 9999;
+	box-shadow: 2px 6px 5px 3px rgb(0 0 0 / 60%);
+	border-radius: 5px;
+	background: #FFFFFF;
+	color: fieldtext;
+	text-align: left;
+	cursor: pointer;
+	display: none;
+}
+
+#play_history .history_item {
+	height: 22px;
+	text-overflow: ellipsis;
+	white-space: nowrap;
+	color: black;
+	overflow: hidden;
+	line-height: 22px;
+	margin: 0 8px 8px;
+}
+#play_history .history_item:first-child{
+	margin-top: 8px;
+}
+#play_history .history_item:hover{
+	color: rgba(14, 144, 210, .8);
+	text-overflow:clip;
+}
+
+.btn_extra_css_0 {
 	background-color: rgba(14, 144, 210, .8);
 }
-.btn_extra_css_1{
+
+.btn_extra_css_1 {
 	background-color: rgba(14, 144, 210, .9);
 }
+
 #btn_logo {
 	width: 20px;
 	height: 20px;

@@ -345,7 +345,7 @@ var log = {
 		} catch (e) {
 			data = [];
 		}
-		return (typeof data === "object" ? data : []);
+		return (data && typeof data === "object" ? data : []);
 	},
 	display: function(data) {
 		if (!data) {

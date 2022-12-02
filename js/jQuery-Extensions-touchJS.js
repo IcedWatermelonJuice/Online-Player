@@ -1,7 +1,7 @@
 // ==UserScript==
 // @name         jQuery-Extensions-touchJS
 // @namespace    http://tampermonkey.net/
-// @version      1.3
+// @version      1.5
 // @description  jQuery-Extensions-touchJS是一个非常简单的jQuery touch扩展，用于适配移动端的常用touch操作（点击tab、双击dbTab、长按longPress、长按终止longPressCancel、滑动swipe以及具体滑动方向left right up down）
 // @author       tutu辣么可爱(greasyfork)/IcedWatermelonJuice(github)
 // @grant        none
@@ -10,6 +10,10 @@
 	if (typeof $ !== "function" && typeof jQuery !== "function") {
 		console.error("jQuery-Extensions-touchJS 缺少jQuery依赖")
 		return false;
+	}
+
+	function jsonExtend(json1 = {}, json2 = {}, json3 = {}) {
+		return $.extend(json1, json2, json3)
 	}
 
 	function getFnName(fn) {
@@ -24,10 +28,11 @@
 		// 预处理
 		var $that = $(this),
 			that = $that[0];
-		that.jQueryTouchFnMap = that.jQueryTouchFnMap ? that.jQueryTouchFnMap : {};
-		var fnMap = $.extend({}, that.jQueryTouchFnMap),
+		that.libForTouchJsExt = that.libForTouchJsExt ? that.libForTouchJsExt : {};
+		var fnMap = jsonExtend({}, that.libForTouchJsExt),
 			fnKeyArray = ["swipe", "left", "right", "up", "down", "tap", "dbTap", "longPress",
-				"longPressCancel"];//可用的事件名
+				"longPressCancel"
+			]; //可用的事件名
 
 		function addFn(e, f, n) {
 			if (fnKeyArray.indexOf(e) < 0) {
@@ -36,16 +41,20 @@
 				return false;
 			}
 			fnMap[e] = fnMap[e] ? fnMap[e] : {};
-			if(!n){//无方法名，获取并使用默认数字id
-				defAry=Object.keys(fnMap[e]).filter((v)=>{/^\d{1,}$/.test(v)});
+			if (!n) { //无方法名，获取并使用默认数字id
+				defAry = Object.keys(fnMap[e]).filter((v) => {
+					/^\d{1,}$/.test(v)
+				});
 				//获取可用数字id
-				if(!fnMap[e][defAry.length]){//假设id连续，长度就是新id
-					n=defAry.length
-				}else{//说明id不连续（手动删过事件方法），寻找中间缺少的id
-					defAry.sort((a,b)=>{return a-b});
-					for(let i =0;i<defAry.length;i++){
-						if(defAry[i]!==i){
-							n=i;
+				if (!fnMap[e][defAry.length]) { //假设id连续，长度就是新id
+					n = defAry.length
+				} else { //说明id不连续（手动删过事件方法），寻找中间缺少的id
+					defAry.sort((a, b) => {
+						return a - b
+					});
+					for (let i = 0; i < defAry.length; i++) {
+						if (defAry[i] !== i) {
+							n = i;
 							break;
 						}
 					}
@@ -65,24 +74,25 @@
 				}
 			}
 		}
-		that.jQueryTouchFnMap = $.extend({}, that.jQueryTouchFnMap, fnMap);
+		that.libForTouchJsExt = jsonExtend({}, that.libForTouchJsExt, fnMap);
 		//添加事件
-		if (!that.jQueryTouchFnMap.eventLoaded) {
-			that.jQueryTouchFnMap.eventLoaded = true;
-			var execFn = function(evt) { //执行方法
+		if (!that.libForTouchJsExt.eventLoaded) {
+			that.libForTouchJsExt.eventLoaded = true;
+			var execFn = function(evt, params = {}) { //执行方法
 				if (!evt) {
 					return false
 				}
-				if(/left|right|up|down/.test(evt)){
-					evt=[evt,"swipe"];
-				}else{
-					evt=[evt];
+				if (/left|right|up|down/.test(evt)) {
+					evt = [evt, "swipe"];
+				} else {
+					evt = [evt];
 				}
-				evt.forEach((e)=>{
-					e = that.jQueryTouchFnMap[e] ? that.jQueryTouchFnMap[e] : {};
+				params.target = that;
+				evt.forEach((e) => {
+					e = that.libForTouchJsExt[e] ? that.libForTouchJsExt[e] : {};
 					for (let i in e) {
 						if (typeof e[i] === "function") {
-							e[i]();
+							e[i](params);
 						}
 					}
 				})
@@ -131,7 +141,9 @@
 					if (!swipe_flag) {
 						lp_timer = -1;
 						lp_flag = true;
-						execFn("longPress")
+						execFn("longPress", {
+							0: pos
+						});
 					}
 				}, 600)
 			}
@@ -146,8 +158,12 @@
 					swipe_flag = true;
 					lp_timer !== -1 && clearTimeout(lp_timer);
 					lp_timer = -1;
-					execFn(dir(pos, temp));
+					execFn(dir(pos, temp), {
+						0: pos,
+						1: temp
+					});
 				}
+				pos = temp;
 			}
 
 			function te(e) { //touchend
@@ -157,16 +173,22 @@
 				lp_timer = -1;
 				tap_timer = -1;
 				if (lp_flag) {
-					execFn("longPressCancel");
+					execFn("longPressCancel", {
+						0: pos
+					});
 				} else if (!swipe_flag) {
 					tap_sum += 1;
 					if (tap_sum >= 2) {
 						tap_sum = 0;
-						execFn("dbTap");
+						execFn("dbTap", {
+							0: pos
+						});
 					} else {
 						tap_timer = setTimeout(() => {
 							tap_sum = 0;
-							execFn("tap");
+							execFn("tap", {
+								0: pos
+							});
 						}, 200)
 					}
 				}
@@ -178,13 +200,13 @@
 		var $that = $(this),
 			that = $that[0];
 		if (typeof evt === "string") {
-			that.jQueryTouchFnMap = that.jQueryTouchFnMap ? that.jQueryTouchFnMap : {};
-			if (that.jQueryTouchFnMap[evt]) {
+			that.libForTouchJsExt = that.libForTouchJsExt ? that.libForTouchJsExt : {};
+			if (that.libForTouchJsExt[evt]) {
 				if (fnName) {
 					fnName = typeof fnName === "function" ? getFnName(fnName) : fnName;
-					delete that.jQueryTouchFnMap[evt][fnName];
+					delete that.libForTouchJsExt[evt][fnName];
 				} else {
-					delete that.jQueryTouchFnMap[evt]
+					delete that.libForTouchJsExt[evt]
 				}
 			}
 		}

@@ -4,4 +4,4 @@
 * 支持PC键盘控制：空格键控制播放/暂停、方向键（⬆️⬇️⬅️➡️）控制音量/进度
 * 支持移动设备手势控制：点击控制播放/暂停、滑动（⬆️⬇️⬅️➡️）控制音量/进度、长按3倍速
 * 在线使用地址(可能会被墙)：[Github Page](https://icedwatermelonjuice.github.io/Online-Player)
-* 备用在线地址(可能不是最新版)：[热铁盒网页托管](https://gem-op.rth.app)
+* 备用在线地址(可能不是最新版)：[热铁盒网页托管](https://gem-op.rth1.one)
